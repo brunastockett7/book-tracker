@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Book Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>Book Tracker</h1>
+    <form id="search-form" class="search">
+      <input id="query" type="search" placeholder="Search books by title, author, or ISBN…" required />
+      <button type="submit">Search</button>
+    </form>
+  </header>
+
+  <main class="container grid">
+    <section>
+      <h2>Results</h2>
+      <div id="results" class="cards" aria-live="polite"></div>
+    </section>
+
+    <aside>
+      <h2>Your Reading List</h2>
+      <div id="reading-list" class="cards"></div>
+      <button id="clear-list" class="secondary">Clear List</button>
+    </aside>
+  </main>
+
+  <footer class="container tiny">
+    <p>Data: Google Books API & Open Library</p>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
