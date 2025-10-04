@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,14 +7,44 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="container">
-    <h1>Book Tracker</h1>
+  <!-- Hero Header -->
+  <header class="container hero">
+    <h1>📚 Book Tracker</h1>
     <form id="search-form" class="search">
       <input id="query" type="search" placeholder="Search books by title, author, or ISBN…" required />
       <button type="submit">Search</button>
     </form>
   </header>
 
+  <!-- Featured Books -->
+  <section class="featured container">
+    <h2>Featured Books</h2>
+    <div class="cards">
+      <article class="card">
+        <img src="https://covers.openlibrary.org/b/isbn/9780439139595-M.jpg" alt="Harry Potter">
+        <div class="content">
+          <h3>Harry Potter and the Goblet of Fire</h3>
+          <p class="meta">J.K. Rowling • 2000</p>
+        </div>
+      </article>
+      <article class="card">
+        <img src="https://covers.openlibrary.org/b/isbn/9780061120084-M.jpg" alt="To Kill a Mockingbird">
+        <div class="content">
+          <h3>To Kill a Mockingbird</h3>
+          <p class="meta">Harper Lee • 1960</p>
+        </div>
+      </article>
+      <article class="card">
+        <img src="https://covers.openlibrary.org/b/isbn/9780590353427-M.jpg" alt="The Hobbit">
+        <div class="content">
+          <h3>The Hobbit</h3>
+          <p class="meta">J.R.R. Tolkien • 1937</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Search Results + Reading List -->
   <main class="container grid">
     <section>
       <h2>Results</h2>
@@ -29,6 +58,7 @@
     </aside>
   </main>
 
+  <!-- Footer -->
   <footer class="container tiny">
     <p>Data: Google Books API & Open Library</p>
   </footer>
