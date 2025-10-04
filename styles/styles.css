@@ -23,3 +23,11 @@ button.secondary { background:#1f2937; color:var(--text); }
 .meta { color:var(--muted); font-size:.9rem; }
 .actions { margin-top:.5rem; display:flex; gap:.5rem; }
 .badge { font-size:.75rem; color:var(--muted); }
+
+:root { 
+  --bg: #ffeef5;        /* light pink background */
+  --panel: #fff;        /* white cards */
+  --text: #333;         /* dark gray text */
+  --muted: #777;        /* muted gray text */
+  --accent: #e75480;    /* rose/pink accent for buttons & headers */
+}
