@@ -5,6 +5,14 @@ const resultsEl = document.getElementById("results");
 const listEl = document.getElementById("reading-list");
 const clearBtn = document.getElementById("clear-list");
 
+// --- helpers
+const toHttps = (url) => (url ? url.replace(/^http:\/\//, "https://") : "");
+const uniqueById = (arr) => {
+  const seen = new Set();
+  return arr.filter(x => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+};
+let lastResults = []; // cache to refresh buttons after list edits
+
 // --- localStorage utils
 const KEY = "readingList";
 const getList = () => JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -17,9 +25,12 @@ function bookCard(b, actionBtn) {
 
   const img = document.createElement("img");
   img.alt = b.title || "Cover";
+  img.loading = "lazy";
+  img.decoding = "async";
 
-  // Prefer Google Books thumbnail; fallback to Open Library by ISBN
-  img.src = b.thumbnail || (b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg` : "");
+  // Prefer Google Books thumbnail; fallback to Open Library by ISBN (both forced to https)
+  const fallback = b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg` : "";
+  img.src = toHttps(b.thumbnail || fallback);
   img.onerror = () => { img.style.display = "none"; }; // hide if broken
 
   const content = document.createElement("div");
@@ -46,6 +57,7 @@ function bookCard(b, actionBtn) {
 }
 
 function renderResults(items) {
+  lastResults = items; // keep latest for button state refresh
   resultsEl.innerHTML = "";
   if (!items.length) {
     resultsEl.innerHTML = "<p>No results. Try another search.</p>";
@@ -56,13 +68,14 @@ function renderResults(items) {
 
   items.forEach(b => {
     const btn = document.createElement("button");
-    btn.textContent = idsInList.has(b.id) ? "In List" : "Add";
-    btn.disabled = idsInList.has(b.id);
+    const inList = idsInList.has(b.id);
+    btn.textContent = inList ? "In List" : "Add";
+    btn.disabled = inList;
     btn.addEventListener("click", () => {
-      const updated = [...getList(), b];
+      const updated = uniqueById([...getList(), b]);
       saveList(updated);
       renderList();
-      renderResults(items); // refresh buttons
+      renderResults(items); // refresh "Add/In List" states
     });
     resultsEl.appendChild(bookCard(b, btn));
   });
@@ -82,6 +95,8 @@ function renderList() {
     btn.addEventListener("click", () => {
       saveList(getList().filter(x => x.id !== b.id));
       renderList();
+      // also refresh results’ buttons so "Add" is re-enabled
+      if (lastResults.length) renderResults(lastResults);
     });
     listEl.appendChild(bookCard(b, btn));
   });
@@ -89,10 +104,16 @@ function renderList() {
 
 // --- API: Google Books (primary)
 async function searchGoogleBooks(q) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=20`;
+  // ISBN-smart query (optional but nice): if the input looks like an ISBN, use isbn: operator
+  const digits = q.replace(/[^0-9Xx]/g, "");
+  const isIsbn = digits.length === 10 || digits.length === 13;
+  const query = isIsbn ? `isbn:${digits}` : encodeURIComponent(q);
+
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=20`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Google Books request failed");
   const data = await res.json();
+
   return (data.items || []).map(item => {
     const v = item.volumeInfo || {};
     const industry = v.industryIdentifiers || [];
@@ -103,7 +124,7 @@ async function searchGoogleBooks(q) {
       authors: v.authors || [],
       year: v.publishedDate ? v.publishedDate.slice(0, 4) : "",
       publisher: v.publisher || "",
-      thumbnail: v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || "",
+      thumbnail: toHttps(v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || ""),
       isbn: isbn13 || industry.find(i => i.type === "ISBN_10")?.identifier || ""
     };
   });
@@ -135,6 +156,7 @@ form.addEventListener("submit", async (e) => {
 clearBtn.addEventListener("click", () => {
   saveList([]);
   renderList();
+  if (lastResults.length) renderResults(lastResults);
 });
 
 // initial paint

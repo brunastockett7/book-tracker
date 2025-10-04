@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Book Tracker</title>
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
-  <!-- Hero Header -->
+  <!-- Top / Hero -->
   <header class="container hero">
     <h1>📚 Book Tracker</h1>
     <form id="search-form" class="search">
@@ -16,10 +16,10 @@
     </form>
   </header>
 
-  <!-- Featured Books -->
+  <!-- Featured (horizontal row) -->
   <section class="featured container">
     <h2>Featured Books</h2>
-    <div class="cards">
+    <div class="cards row">
       <article class="card">
         <img src="https://covers.openlibrary.org/b/isbn/9780439139595-M.jpg" alt="Harry Potter">
         <div class="content">
@@ -44,21 +44,22 @@
     </div>
   </section>
 
-  <!-- Search Results + Reading List -->
+  <!-- Results + Reading List -->
   <main class="container grid">
     <section>
       <h2>Results</h2>
-      <div id="results" class="cards" aria-live="polite"></div>
+      <!-- results will render horizontally -->
+      <div id="results" class="cards row" aria-live="polite"></div>
     </section>
 
     <aside>
       <h2>Your Reading List</h2>
-      <div id="reading-list" class="cards"></div>
+      <!-- list can be vertical or horizontal; using row to match -->
+      <div id="reading-list" class="cards row"></div>
       <button id="clear-list" class="secondary">Clear List</button>
     </aside>
   </main>
 
-  <!-- Footer -->
   <footer class="container tiny">
     <p>Data: Google Books API & Open Library</p>
   </footer>
