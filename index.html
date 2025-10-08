@@ -10,6 +10,23 @@
   <!-- Top / Hero -->
   <header class="container hero">
     <h1>📚 Book Tracker</h1>
+
+    <!-- Toolbar: Parent Control + Book Bag -->
+    <div class="toolbar">
+      <label class="parent-toggle">
+        <input type="checkbox" id="parent-toggle" />
+        <span>Parent Control</span>
+      </label>
+
+      <button id="bag-btn" class="icon-btn" aria-label="Book bag" type="button">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M6 7V6a6 6 0 1 1 12 0v1h2a1 1 0 0 1 1 1l-1.5 11A3 3 0 0 1 16.52 22H7.48A3 3 0 0 1 4.5 19L3 8a1 1 0 0 1 1-1h2zm2 0h8V6a4 4 0 0 0-8 0v1z"></path>
+        </svg>
+        <span class="bag-count" id="bag-count">0</span>
+      </button>
+    </div>
+
+    <!-- Search form -->
     <form id="search-form" class="search">
       <input id="query" type="search" placeholder="Search books by title, author, or ISBN…" required />
       <button type="submit">Search</button>
@@ -48,17 +65,26 @@
   <main class="container grid">
     <section>
       <h2>Results</h2>
-      <!-- results will render horizontally -->
-      <div id="results" class="cards row" aria-live="polite"></div>
+      <div id="results" class="cards" aria-live="polite"></div>
     </section>
 
     <aside>
       <h2>Your Reading List</h2>
-      <!-- list can be vertical or horizontal; using row to match -->
       <div id="reading-list" class="cards row"></div>
       <button id="clear-list" class="secondary">Clear List</button>
     </aside>
   </main>
+
+  <!-- Book Bag Modal -->
+  <div id="bag-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="bag-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="bag-title">Your Book Bag</h3>
+        <button id="close-bag" class="icon-btn" aria-label="Close bag" type="button">&times;</button>
+      </div>
+      <div id="bag-items" class="cards"></div>
+    </div>
+  </div>
 
   <footer class="container tiny">
     <p>Data: Google Books API & Open Library</p>

@@ -5,6 +5,14 @@ const resultsEl = document.getElementById("results");
 const listEl = document.getElementById("reading-list");
 const clearBtn = document.getElementById("clear-list");
 
+// NEW: toolbar + modal refs
+const parentToggle = document.getElementById("parent-toggle");
+const bagBtn = document.getElementById("bag-btn");
+const bagCountEl = document.getElementById("bag-count");
+const bagModal = document.getElementById("bag-modal");
+const bagItemsEl = document.getElementById("bag-items");
+const closeBagBtn = document.getElementById("close-bag");
+
 // --- helpers
 const toHttps = (url) => (url ? url.replace(/^http:\/\//, "https://") : "");
 const uniqueById = (arr) => {
@@ -18,6 +26,11 @@ const KEY = "readingList";
 const getList = () => JSON.parse(localStorage.getItem(KEY) || "[]");
 const saveList = (arr) => localStorage.setItem(KEY, JSON.stringify(arr));
 
+// NEW: Parent Control storage
+const PARENT_KEY = "parentControl"; // "on" | "off"
+const getParent = () => localStorage.getItem(PARENT_KEY) === "on";
+const setParent = (on) => localStorage.setItem(PARENT_KEY, on ? "on" : "off");
+
 // --- render helpers
 function bookCard(b, actionBtn) {
   const div = document.createElement("article");
@@ -28,10 +41,9 @@ function bookCard(b, actionBtn) {
   img.loading = "lazy";
   img.decoding = "async";
 
-  // Prefer Google Books thumbnail; fallback to Open Library by ISBN (both forced to https)
   const fallback = b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg` : "";
   img.src = toHttps(b.thumbnail || fallback);
-  img.onerror = () => { img.style.display = "none"; }; // hide if broken
+  img.onerror = () => { img.style.display = "none"; };
 
   const content = document.createElement("div");
   content.className = "content";
@@ -57,16 +69,22 @@ function bookCard(b, actionBtn) {
 }
 
 function renderResults(items) {
-  lastResults = items; // keep latest for button state refresh
+  lastResults = items;
+
+  // Parent Control filter
+  const visible = getParent()
+    ? items.filter(b => (b.maturity || "NOT_MATURE") !== "MATURE")
+    : items;
+
   resultsEl.innerHTML = "";
-  if (!items.length) {
+  if (!visible.length) {
     resultsEl.innerHTML = "<p>No results. Try another search.</p>";
     return;
   }
   const current = getList();
   const idsInList = new Set(current.map(x => x.id));
 
-  items.forEach(b => {
+  visible.forEach(b => {
     const btn = document.createElement("button");
     const inList = idsInList.has(b.id);
     btn.textContent = inList ? "In List" : "Add";
@@ -75,10 +93,14 @@ function renderResults(items) {
       const updated = uniqueById([...getList(), b]);
       saveList(updated);
       renderList();
-      renderResults(items); // refresh "Add/In List" states
+      renderResults(items);
     });
     resultsEl.appendChild(bookCard(b, btn));
   });
+}
+
+function updateBagCount() {
+  if (bagCountEl) bagCountEl.textContent = String(getList().length);
 }
 
 function renderList() {
@@ -86,6 +108,7 @@ function renderList() {
   const items = getList();
   if (!items.length) {
     listEl.innerHTML = "<p class='meta'>Your reading list is empty.</p>";
+    updateBagCount();
     return;
   }
   items.forEach(b => {
@@ -95,16 +118,15 @@ function renderList() {
     btn.addEventListener("click", () => {
       saveList(getList().filter(x => x.id !== b.id));
       renderList();
-      // also refresh results’ buttons so "Add" is re-enabled
       if (lastResults.length) renderResults(lastResults);
     });
     listEl.appendChild(bookCard(b, btn));
   });
+  updateBagCount();
 }
 
 // --- API: Google Books (primary)
 async function searchGoogleBooks(q) {
-  // ISBN-smart query (optional but nice): if the input looks like an ISBN, use isbn: operator
   const digits = q.replace(/[^0-9Xx]/g, "");
   const isIsbn = digits.length === 10 || digits.length === 13;
   const query = isIsbn ? `isbn:${digits}` : encodeURIComponent(q);
@@ -125,19 +147,11 @@ async function searchGoogleBooks(q) {
       year: v.publishedDate ? v.publishedDate.slice(0, 4) : "",
       publisher: v.publisher || "",
       thumbnail: toHttps(v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || ""),
-      isbn: isbn13 || industry.find(i => i.type === "ISBN_10")?.identifier || ""
+      isbn: isbn13 || industry.find(i => i.type === "ISBN_10")?.identifier || "",
+      maturity: v.maturityRating || "NOT_MATURE" // used by Parent Control
     };
   });
 }
-
-// --- Fallback cover via Open Library if missing (optional)
-/* Example of using Open Library metadata if you want to enhance later:
-async function fetchOpenLibraryByISBN(isbn) {
-  const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
-  if (!res.ok) return null;
-  return await res.json();
-}
-*/
 
 // --- events
 form.addEventListener("submit", async (e) => {
@@ -157,6 +171,41 @@ clearBtn.addEventListener("click", () => {
   saveList([]);
   renderList();
   if (lastResults.length) renderResults(lastResults);
+});
+
+// Parent Control toggle
+if (parentToggle) {
+  parentToggle.checked = getParent();
+  parentToggle.addEventListener("change", () => {
+    setParent(parentToggle.checked);
+    if (lastResults.length) renderResults(lastResults);
+  });
+}
+
+// Book bag modal
+bagBtn?.addEventListener("click", () => {
+  bagItemsEl.innerHTML = "";
+  const items = getList();
+  if (!items.length) {
+    bagItemsEl.innerHTML = "<p class='meta'>Your book bag is empty.</p>";
+  } else {
+    items.forEach(b => {
+      const btn = document.createElement("button");
+      btn.className = "secondary";
+      btn.textContent = "Remove";
+      btn.addEventListener("click", () => {
+        saveList(getList().filter(x => x.id !== b.id));
+        renderList();
+        bagBtn.click(); // rebuild modal
+      });
+      bagItemsEl.appendChild(bookCard(b, btn));
+    });
+  }
+  bagModal.hidden = false;
+});
+closeBagBtn?.addEventListener("click", () => { bagModal.hidden = true; });
+bagModal?.addEventListener("click", (e) => {
+  if (e.target === bagModal) bagModal.hidden = true;
 });
 
 // initial paint
