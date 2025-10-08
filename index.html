@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Book Tracker</title>
   <link rel="stylesheet" href="styles/styles.css" />
 </head>
@@ -18,31 +18,15 @@
         <span>Parent Control</span>
       </label>
 
+      <!-- Bag button (uses your cart.webp image) -->
       <button id="bag-btn" class="icon-btn" aria-label="Open Book Bag" type="button">
         <span id="bag-count" class="bag-count">0</span>
-        <!-- Creative bag + books + apple icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
-             width="36" height="36" class="bag-svg" aria-hidden="true">
-          <!-- Bag -->
-          <rect x="8" y="20" width="48" height="32" rx="6" ry="6" fill="#a1662f" stroke="#7b4c23" stroke-width="2"/>
-          <rect x="18" y="10" width="28" height="16" rx="4" ry="4" fill="#b8753b"/>
-          <rect x="24" y="6" width="16" height="8" rx="3" fill="#c88445"/>
-          <!-- Buckles -->
-          <rect x="18" y="28" width="8" height="8" rx="1.5" fill="#f9d77e" stroke="#7b4c23" stroke-width="1.5"/>
-          <rect x="38" y="28" width="8" height="8" rx="1.5" fill="#f9d77e" stroke="#7b4c23" stroke-width="1.5"/>
-          <!-- Books -->
-          <rect x="10" y="48" width="20" height="6" rx="1" fill="#e75480"/>
-          <rect x="14" y="44" width="20" height="6" rx="1" fill="#5aa8ff"/>
-          <rect x="18" y="40" width="20" height="6" rx="1" fill="#ffe38a"/>
-          <!-- Apple -->
-          <circle cx="46" cy="38" r="4" fill="#e23c3c"/>
-          <path d="M46 33c1 0 2 1 2 2-1 0-3-1-4-2s1-1 2 0z" fill="#6fb96b"/>
-        </svg>
+        <img src="images/cart.webp" alt="Book bag" class="bag-img" />
       </button>
     </div>
 
     <!-- Search form -->
-    <form id="search-form" class="search">
+    <form id="search-form" class="search" role="search">
       <input id="query" type="search" placeholder="Search books by title, author, or ISBN…" required />
       <button type="submit">Search</button>
     </form>
@@ -53,7 +37,7 @@
     <h2>Featured Books</h2>
     <div class="cards row">
       <article class="card">
-        <img src="https://covers.openlibrary.org/b/isbn/9780439139595-M.jpg" alt="Harry Potter">
+        <img src="https://covers.openlibrary.org/b/isbn/9780439139595-M.jpg" alt="Harry Potter and the Goblet of Fire">
         <div class="content">
           <h3>Harry Potter and the Goblet of Fire</h3>
           <p class="meta">J.K. Rowling • 2000</p>

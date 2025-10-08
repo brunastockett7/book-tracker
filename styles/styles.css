@@ -4,20 +4,20 @@
 
 /* --- Theme Colors --- */
 :root {
-  --bg: #ffeef5;           /* light pink page background */
-  --panel: #ffffff;        /* white cards */
-  --text: #333333;         /* dark text */
-  --muted: #777777;        /* muted text */
-  --accent: #e75480;       /* rose/pink accent */
+  --bg: #ffeef5;     /* light pink page background */
+  --panel: #ffffff;  /* white cards */
+  --text: #333333;   /* dark text */
+  --muted: #777777;  /* muted text */
+  --accent: #e75480; /* rose/pink accent */
 }
 
 * { box-sizing: border-box; }
 
-/* --- Base Styles --- */
+/* --- Base --- */
 html, body {
   margin: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--text);
 }
 
@@ -55,7 +55,7 @@ h2 {
   text-align: center;
 }
 
-/* --- Search Bar --- */
+/* --- Search --- */
 .search {
   display: flex;
   gap: 0.5rem;
@@ -82,7 +82,7 @@ button {
 button:hover { opacity: 0.92; }
 button.secondary { background: #e6e6e6; color: var(--text); }
 
-/* --- Cards Base --- */
+/* --- Cards --- */
 .cards { display: grid; gap: 0.75rem; }
 
 .card {
@@ -96,12 +96,14 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   transition: transform 0.18s ease;
 }
 .card:hover { transform: translateY(-4px); }
+
 .card img {
   width: 100%;
   height: 280px;
   object-fit: cover;
   background: #fbe1ec;
 }
+
 .card .content {
   padding: 0.75rem;
   display: flex;
@@ -113,7 +115,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
 .actions { margin-top: 0.5rem; display: flex; gap: 0.5rem; }
 .badge { font-size: 0.75rem; color: var(--muted); }
 
-/* --- Featured Section (horizontal row) --- */
+/* --- Featured (horizontal row) --- */
 .cards.row {
   display: flex;
   gap: 0.75rem;
@@ -121,18 +123,12 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   padding-bottom: 0.25rem;
   scroll-snap-type: x mandatory;
 }
-.cards.row .card {
-  min-width: 220px;
-  scroll-snap-align: start;
-}
+.cards.row .card { min-width: 220px; scroll-snap-align: start; }
 .cards.row::-webkit-scrollbar { height: 10px; }
-.cards.row::-webkit-scrollbar-thumb {
-  background: #f1a3be;
-  border-radius: 999px;
-}
+.cards.row::-webkit-scrollbar-thumb { background: #f1a3be; border-radius: 999px; }
 .cards.row::-webkit-scrollbar-track { background: #ffe2ee; }
 
-/* --- Results Grid (search results) --- */
+/* --- Results grid --- */
 #results {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -143,7 +139,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
 #results .card { height: 100%; display: flex; flex-direction: column; }
 #results .actions { margin-top: auto; }
 
-/* --- Toolbar (Parent Control + Book Bag) --- */
+/* --- Toolbar (Parent Control + Bag) --- */
 .toolbar {
   position: absolute;
   right: 1rem;
@@ -179,20 +175,21 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   cursor: pointer;
 }
 .icon-btn:hover { background: #fff5f9; }
+
+/* If you ever use an SVG icon again, this keeps it pink */
 .icon-btn svg { display: block; }
 .icon-btn svg path { fill: var(--accent); }
 
-.icon-btn .bag-svg {
+/* Image-based bag icon */
+.bag-img {
+  width: 26px;            /* tweak 24–32px if you want */
+  height: 26px;
   display: block;
+  object-fit: contain;
+  pointer-events: none;   /* ensure clicks hit the button */
   transition: transform 120ms ease;
 }
-.icon-btn:hover .bag-svg {
-  transform: translateY(-1px);
-}
-
-.icon-btn svg path {
-  fill: #e46a8b !important;
-}
+.icon-btn:hover .bag-img { transform: translateY(-1px); }
 
 .bag-count {
   position: absolute;
@@ -210,7 +207,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* --- Modal (Book Bag Window) --- */
+/* --- Modal (Book Bag) --- */
 .modal {
   position: fixed;
   inset: 0;
@@ -222,6 +219,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   padding: 1rem;
 }
 .modal[hidden] { display: none; }
+
 .modal-content {
   width: min(860px, 96vw);
   background: #fff;
@@ -236,6 +234,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   justify-content: space-between;
   margin-bottom: 0.75rem;
 }
+
 #bag-items.cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -244,7 +243,7 @@ button.secondary { background: #e6e6e6; color: var(--text); }
 #bag-items .card { border: 1px solid #f3bfd0; height: 100%; }
 #bag-items .actions { margin-top: auto; }
 
-/* --- Mobile adjustments --- */
+/* --- Mobile --- */
 @media (max-width: 600px) {
   .toolbar {
     position: static;
