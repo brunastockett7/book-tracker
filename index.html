@@ -19,10 +19,36 @@
       </label>
 
       <button id="bag-btn" class="icon-btn" aria-label="Book bag" type="button">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M6 7V6a6 6 0 1 1 12 0v1h2a1 1 0 0 1 1 1l-1.5 11A3 3 0 0 1 16.52 22H7.48A3 3 0 0 1 4.5 19L3 8a1 1 0 0 1 1-1h2zm2 0h8V6a4 4 0 0 0-8 0v1z"></path>
-        </svg>
         <span class="bag-count" id="bag-count">0</span>
+
+        <!-- ✨ Cute school bag full of books (inline SVG) -->
+        <svg
+          class="bag-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 64 64"
+          width="26" height="26"
+          aria-hidden="true" focusable="false">
+          <!-- strap & handle -->
+          <path d="M20 20c0-8 6-14 12-14s12 6 12 14v4h-6v-4c0-3.6-2.7-8-6-8s-6 4.4-6 8v4h-6v-4z" fill="#e46a8b"/>
+          <!-- bag body -->
+          <path d="M10 24h44a4 4 0 0 1 4 4v25a7 7 0 0 1-7 7H13a7 7 0 0 1-7-7V28a4 4 0 0 1 4-4z" fill="#ff9db3"/>
+          <!-- side pockets -->
+          <rect x="6" y="30" width="10" height="18" rx="5" fill="#ff8aa5"/>
+          <rect x="48" y="30" width="10" height="18" rx="5" fill="#ff8aa5"/>
+          <!-- books peeking out -->
+          <rect x="17" y="18" width="10" height="16" rx="1.5" fill="#43c6b9"/>
+          <rect x="27.5" y="16.5" width="9" height="17.5" rx="1.5" fill="#ffb757"/>
+          <rect x="37" y="18" width="10" height="16" rx="1.5" fill="#50b6ff"/>
+          <rect x="41" y="21" width="6" height="13" rx="1.2" fill="#8c5adf"/>
+          <!-- front pocket -->
+          <path d="M12 38h40v13c0 2.2-1.8 4-4 4H16c-2.2 0-4-1.8-4-4V38z" fill="#ffa0b8"/>
+          <path d="M20 40h24v7c0 2-1.6 3.6-3.6 3.6H23.6A3.6 3.6 0 0 1 20 47v-7z" fill="#ff8aa5"/>
+          <!-- clasp -->
+          <rect x="29" y="46" width="6" height="6" rx="2" fill="#ffe8ad"/>
+          <!-- subtle outline -->
+          <path d="M10 24h44a4 4 0 0 1 4 4v25a7 7 0 0 1-7 7H13a7 7 0 0 1-7-7V28a4 4 0 0 1 4-4z"
+                fill="none" stroke="#e46a8b" stroke-width="2" />
+        </svg>
       </button>
     </div>
 
@@ -61,8 +87,8 @@
     </div>
   </section>
 
-  <!-- Results + Reading List -->
-  <main class="container grid">
+  <!-- Results -->
+  <main class="container">
     <section>
       <h2>Results</h2>
       <div id="results" class="cards" aria-live="polite"></div>

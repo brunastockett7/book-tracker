@@ -182,6 +182,15 @@ button.secondary { background: #e6e6e6; color: var(--text); }
 .icon-btn svg { display: block; }
 .icon-btn svg path { fill: var(--accent); }
 
+.icon-btn .bag-svg {
+  display: block;
+  transition: transform 120ms ease;
+}
+.icon-btn:hover .bag-svg {
+  transform: translateY(-1px);
+}
+
+
 .bag-count {
   position: absolute;
   top: -6px;
