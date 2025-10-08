@@ -2,8 +2,8 @@
 const form = document.getElementById("search-form");
 const queryInput = document.getElementById("query");
 const resultsEl = document.getElementById("results");
-const listEl = document.getElementById("reading-list");
-const clearBtn = document.getElementById("clear-list");
+const listEl = document.getElementById("reading-list"); // may be null (no sidebar)
+const clearBtn = document.getElementById("clear-list"); // may be null
 
 // NEW: toolbar + modal refs
 const parentToggle = document.getElementById("parent-toggle");
@@ -92,8 +92,8 @@ function renderResults(items) {
     btn.addEventListener("click", () => {
       const updated = uniqueById([...getList(), b]);
       saveList(updated);
-      renderList();
-      renderResults(items);
+      updateBagCount();          // ✅ only update badge
+      renderResults(items);      // refresh button state
     });
     resultsEl.appendChild(bookCard(b, btn));
   });
@@ -104,8 +104,16 @@ function updateBagCount() {
 }
 
 function renderList() {
-  listEl.innerHTML = "";
   const items = getList();
+
+  // If no sidebar exists, just keep badge up-to-date
+  if (!listEl) {
+    updateBagCount();
+    return;
+  }
+
+  // Sidebar (only if present)
+  listEl.innerHTML = "";
   if (!items.length) {
     listEl.innerHTML = "<p class='meta'>Your reading list is empty.</p>";
     updateBagCount();
@@ -167,11 +175,13 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-clearBtn.addEventListener("click", () => {
-  saveList([]);
-  renderList();
-  if (lastResults.length) renderResults(lastResults);
-});
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    saveList([]);
+    renderList();
+    if (lastResults.length) renderResults(lastResults);
+  });
+}
 
 // Parent Control toggle
 if (parentToggle) {
@@ -195,8 +205,8 @@ bagBtn?.addEventListener("click", () => {
       btn.textContent = "Remove";
       btn.addEventListener("click", () => {
         saveList(getList().filter(x => x.id !== b.id));
-        renderList();
-        bagBtn.click(); // rebuild modal
+        renderList();    // updates badge
+        bagBtn.click();  // rebuild modal content
       });
       bagItemsEl.appendChild(bookCard(b, btn));
     });
@@ -205,8 +215,9 @@ bagBtn?.addEventListener("click", () => {
 });
 closeBagBtn?.addEventListener("click", () => { bagModal.hidden = true; });
 bagModal?.addEventListener("click", (e) => {
-  if (e.target === bagModal) bagModal.hidden = true;
+  if (e.target === bagModal) bagModal.hidden = true; // click backdrop
 });
 
 // initial paint
 renderList();
+
