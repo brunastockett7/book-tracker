@@ -190,6 +190,11 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   transform: translateY(-1px);
 }
 
+.icon-btn svg path {
+  fill: #e46a8b !important;
+}
+
+
 
 .bag-count {
   position: absolute;
