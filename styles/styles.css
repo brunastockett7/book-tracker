@@ -194,8 +194,6 @@ button.secondary { background: #e6e6e6; color: var(--text); }
   fill: #e46a8b !important;
 }
 
-
-
 .bag-count {
   position: absolute;
   top: -6px;
