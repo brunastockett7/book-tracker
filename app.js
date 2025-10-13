@@ -17,7 +17,7 @@ const closeBagBtn = document.getElementById("close-bag");
 const toHttps = (url) => (url ? url.replace(/^http:\/\//, "https://") : "");
 const uniqueById = (arr) => {
   const seen = new Set();
-  return arr.filter(x => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+  return arr.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true)));
 };
 let lastResults = []; // cache so we can refresh buttons after list edits
 
@@ -33,8 +33,8 @@ const setParent = (on) => localStorage.setItem(PARENT_KEY, on ? "on" : "off");
 
 // Last query storage (third property for rubric)
 const LAST_QUERY_KEY = "lastQuery";
-function saveLastQuery(q){ localStorage.setItem(LAST_QUERY_KEY, q); }
-function getLastQuery(){ return localStorage.getItem(LAST_QUERY_KEY) || ""; }
+function saveLastQuery(q) { localStorage.setItem(LAST_QUERY_KEY, q); }
+function getLastQuery() { return localStorage.getItem(LAST_QUERY_KEY) || ""; }
 
 // --- render helpers
 function bookCard(b, actionBtn) {
@@ -43,8 +43,7 @@ function bookCard(b, actionBtn) {
 
   const img = document.createElement("img");
   img.alt = b.title || "Cover";
-  img.loading = "lazy";
-  img.decoding = "async";
+  // (Intentionally not setting loading/decoding to silence the lazy-image warning)
 
   const fallback = b.isbn ? `https://covers.openlibrary.org/b/isbn/${b.isbn}-M.jpg` : "";
   img.src = toHttps(b.thumbnail || fallback);
@@ -79,7 +78,7 @@ function renderResults(items) {
 
   // Parent Control filter
   const visible = getParent()
-    ? items.filter(b => (b.maturity || "NOT_MATURE") !== "MATURE")
+    ? items.filter((b) => (b.maturity || "NOT_MATURE") !== "MATURE")
     : items;
 
   resultsEl.innerHTML = "";
@@ -88,9 +87,9 @@ function renderResults(items) {
     return;
   }
   const current = getList();
-  const idsInList = new Set(current.map(x => x.id));
+  const idsInList = new Set(current.map((x) => x.id));
 
-  visible.forEach(b => {
+  visible.forEach((b) => {
     const btn = document.createElement("button");
     const inList = idsInList.has(b.id);
     btn.textContent = inList ? "In List" : "Add";
@@ -125,12 +124,12 @@ function renderList() {
     updateBagCount();
     return;
   }
-  items.forEach(b => {
+  items.forEach((b) => {
     const btn = document.createElement("button");
     btn.className = "secondary";
     btn.textContent = "Remove";
     btn.addEventListener("click", () => {
-      saveList(getList().filter(x => x.id !== b.id));
+      saveList(getList().filter((x) => x.id !== b.id));
       renderList();
       if (lastResults.length) renderResults(lastResults);
     });
@@ -150,10 +149,10 @@ async function searchGoogleBooks(q) {
   if (!res.ok) throw new Error("Google Books request failed");
   const data = await res.json();
 
-  return (data.items || []).map(item => {
+  return (data.items || []).map((item) => {
     const v = item.volumeInfo || {};
     const industry = v.industryIdentifiers || [];
-    const isbn13 = industry.find(i => i.type === "ISBN_13")?.identifier;
+    const isbn13 = industry.find((i) => i.type === "ISBN_13")?.identifier;
     return {
       id: item.id,
       title: v.title || "Untitled",
@@ -161,16 +160,16 @@ async function searchGoogleBooks(q) {
       year: v.publishedDate ? v.publishedDate.slice(0, 4) : "",
       publisher: v.publisher || "",
       thumbnail: toHttps(v.imageLinks?.thumbnail || v.imageLinks?.smallThumbnail || ""),
-      isbn: isbn13 || industry.find(i => i.type === "ISBN_10")?.identifier || "",
+      isbn: isbn13 || industry.find((i) => i.type === "ISBN_10")?.identifier || "",
       maturity: v.maturityRating || "NOT_MATURE" // used by Parent Control
     };
   });
 }
 
-// --- API: Open Library enrichment (secondary) — guarded to avoid 404 spam
+// --- API: Open Library enrichment (secondary) — guarded to avoid 404s
 async function enrichWithOpenLibrary(book) {
   const isbn = book.isbn;
-  // Only try if ISBN is clearly valid: exactly 10 or 13 digits
+  // Only call OL when ISBN is exactly 10 or 13 digits (no dashes/spaces)
   if (!isbn || !/^\d{10}$|^\d{13}$/.test(isbn)) return book;
 
   try {
@@ -183,7 +182,7 @@ async function enrichWithOpenLibrary(book) {
       pagesOL: typeof data.number_of_pages === "number" ? data.number_of_pages : null
     };
   } catch {
-    return book; // never throw
+    return book; // never throw; no console noise
   }
 }
 
@@ -195,12 +194,12 @@ function renderBagModal() {
     bagItemsEl.innerHTML = "<p class='meta'>Your book bag is empty.</p>";
     return;
   }
-  items.forEach(b => {
+  items.forEach((b) => {
     const removeBtn = document.createElement("button");
     removeBtn.className = "secondary";
     removeBtn.textContent = "Remove";
     removeBtn.addEventListener("click", () => {
-      saveList(getList().filter(x => x.id !== b.id));
+      saveList(getList().filter((x) => x.id !== b.id));
       updateBagCount();
       renderBagModal(); // rebuild modal after removal
       if (lastResults.length) renderResults(lastResults);
@@ -213,12 +212,12 @@ function openModal() {
   renderBagModal();
   bagModal.hidden = false;
   bagModal.classList?.add("show"); // works if you added CSS animation
-  bagBtn?.setAttribute("aria-expanded","true");
+  bagBtn?.setAttribute("aria-expanded", "true");
 }
 function closeModal() {
   bagModal.classList?.remove("show");
   setTimeout(() => { bagModal.hidden = true; }, 180);
-  bagBtn?.setAttribute("aria-expanded","false");
+  bagBtn?.setAttribute("aria-expanded", "false");
 }
 
 // --- events
