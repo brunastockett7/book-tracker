@@ -31,6 +31,11 @@ const PARENT_KEY = "parentControl"; // "on" | "off"
 const getParent = () => localStorage.getItem(PARENT_KEY) === "on";
 const setParent = (on) => localStorage.setItem(PARENT_KEY, on ? "on" : "off");
 
+// NEW: Last query storage (third LocalStorage property)
+const LAST_QUERY_KEY = "lastQuery";
+function saveLastQuery(q){ localStorage.setItem(LAST_QUERY_KEY, q); }
+function getLastQuery(){ return localStorage.getItem(LAST_QUERY_KEY) || ""; }
+
 // --- render helpers
 function bookCard(b, actionBtn) {
   const div = document.createElement("article");
@@ -53,7 +58,8 @@ function bookCard(b, actionBtn) {
 
   const meta = document.createElement("div");
   meta.className = "meta";
-  meta.textContent = [b.authors?.join(", "), b.year ? `• ${b.year}` : ""].filter(Boolean).join(" ");
+  meta.textContent = [b.authors?.join(", "), b.year ? `• ${b.year}` : ""]
+    .filter(Boolean).join(" ");
 
   const badge = document.createElement("div");
   badge.className = "badge";
@@ -161,15 +167,38 @@ async function searchGoogleBooks(q) {
   });
 }
 
+// --- API: Open Library enrichment (secondary)
+async function enrichWithOpenLibrary(book) {
+  const isbn = book.isbn;
+  if (!isbn) return book;
+  try {
+    const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
+    if (!res.ok) return book;
+    const data = await res.json();
+    return {
+      ...book,
+      subjects: data.subjects || [],
+      pagesOL: data.number_of_pages || null
+    };
+  } catch {
+    return book;
+  }
+}
+
 // --- events
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const q = queryInput.value.trim();
   if (!q) return;
+
+  // save last query
+  saveLastQuery(q);
+
   resultsEl.innerHTML = "<p class='meta'>Searching…</p>";
   try {
     const items = await searchGoogleBooks(q);
-    renderResults(items);
+    const enriched = await Promise.all(items.map(enrichWithOpenLibrary));
+    renderResults(enriched);
   } catch (err) {
     resultsEl.innerHTML = `<p class='meta'>Error: ${err.message}</p>`;
   }
@@ -212,12 +241,25 @@ bagBtn?.addEventListener("click", () => {
     });
   }
   bagModal.hidden = false;
+  bagBtn?.setAttribute("aria-expanded","true"); // a11y
 });
-closeBagBtn?.addEventListener("click", () => { bagModal.hidden = true; });
+closeBagBtn?.addEventListener("click", () => {
+  bagModal.hidden = true;
+  bagBtn?.setAttribute("aria-expanded","false"); // a11y
+});
 bagModal?.addEventListener("click", (e) => {
-  if (e.target === bagModal) bagModal.hidden = true; // click backdrop
+  if (e.target === bagModal) {
+    bagModal.hidden = true; // click backdrop
+    bagBtn?.setAttribute("aria-expanded","false");
+  }
 });
 
 // initial paint
 renderList();
 
+// --- Restore last search on page load ---
+const last = getLastQuery();
+if (last) {
+  queryInput.value = last;
+  form.dispatchEvent(new Event("submit"));
+}
