@@ -5,7 +5,7 @@ const resultsEl = document.getElementById("results");
 const listEl = document.getElementById("reading-list"); // may be null (no sidebar)
 const clearBtn = document.getElementById("clear-list"); // may be null
 
-// NEW: toolbar + modal refs
+// Toolbar + modal refs
 const parentToggle = document.getElementById("parent-toggle");
 const bagBtn = document.getElementById("bag-btn");
 const bagCountEl = document.getElementById("bag-count");
@@ -19,19 +19,19 @@ const uniqueById = (arr) => {
   const seen = new Set();
   return arr.filter(x => (seen.has(x.id) ? false : (seen.add(x.id), true)));
 };
-let lastResults = []; // cache to refresh buttons after list edits
+let lastResults = []; // cache so we can refresh buttons after list edits
 
 // --- localStorage utils
 const KEY = "readingList";
 const getList = () => JSON.parse(localStorage.getItem(KEY) || "[]");
 const saveList = (arr) => localStorage.setItem(KEY, JSON.stringify(arr));
 
-// NEW: Parent Control storage
+// Parent Control storage
 const PARENT_KEY = "parentControl"; // "on" | "off"
 const getParent = () => localStorage.getItem(PARENT_KEY) === "on";
 const setParent = (on) => localStorage.setItem(PARENT_KEY, on ? "on" : "off");
 
-// NEW: Last query storage (third LocalStorage property)
+// Last query storage (third property for rubric)
 const LAST_QUERY_KEY = "lastQuery";
 function saveLastQuery(q){ localStorage.setItem(LAST_QUERY_KEY, q); }
 function getLastQuery(){ return localStorage.getItem(LAST_QUERY_KEY) || ""; }
@@ -98,8 +98,8 @@ function renderResults(items) {
     btn.addEventListener("click", () => {
       const updated = uniqueById([...getList(), b]);
       saveList(updated);
-      updateBagCount();          // ✅ only update badge
-      renderResults(items);      // refresh button state
+      updateBagCount();
+      renderResults(items); // refresh “Add / In List” state
     });
     resultsEl.appendChild(bookCard(b, btn));
   });
@@ -167,22 +167,58 @@ async function searchGoogleBooks(q) {
   });
 }
 
-// --- API: Open Library enrichment (secondary)
+// --- API: Open Library enrichment (secondary) — guarded to avoid 404 spam
 async function enrichWithOpenLibrary(book) {
   const isbn = book.isbn;
-  if (!isbn) return book;
+  // Only try if ISBN is clearly valid: exactly 10 or 13 digits
+  if (!isbn || !/^\d{10}$|^\d{13}$/.test(isbn)) return book;
+
   try {
-    const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`);
-    if (!res.ok) return book;
+    const res = await fetch(`https://openlibrary.org/isbn/${isbn}.json`, { cache: "no-store" });
+    if (!res.ok) return book; // quietly skip 404/5xx
     const data = await res.json();
     return {
       ...book,
-      subjects: data.subjects || [],
-      pagesOL: data.number_of_pages || null
+      subjects: Array.isArray(data.subjects) ? data.subjects : [],
+      pagesOL: typeof data.number_of_pages === "number" ? data.number_of_pages : null
     };
   } catch {
-    return book;
+    return book; // never throw
   }
+}
+
+// --- Bag modal builder (stable re-render)
+function renderBagModal() {
+  bagItemsEl.innerHTML = "";
+  const items = getList();
+  if (!items.length) {
+    bagItemsEl.innerHTML = "<p class='meta'>Your book bag is empty.</p>";
+    return;
+  }
+  items.forEach(b => {
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "secondary";
+    removeBtn.textContent = "Remove";
+    removeBtn.addEventListener("click", () => {
+      saveList(getList().filter(x => x.id !== b.id));
+      updateBagCount();
+      renderBagModal(); // rebuild modal after removal
+      if (lastResults.length) renderResults(lastResults);
+    });
+    bagItemsEl.appendChild(bookCard(b, removeBtn));
+  });
+}
+
+function openModal() {
+  renderBagModal();
+  bagModal.hidden = false;
+  bagModal.classList?.add("show"); // works if you added CSS animation
+  bagBtn?.setAttribute("aria-expanded","true");
+}
+function closeModal() {
+  bagModal.classList?.remove("show");
+  setTimeout(() => { bagModal.hidden = true; }, 180);
+  bagBtn?.setAttribute("aria-expanded","false");
 }
 
 // --- events
@@ -191,7 +227,6 @@ form.addEventListener("submit", async (e) => {
   const q = queryInput.value.trim();
   if (!q) return;
 
-  // save last query
   saveLastQuery(q);
 
   resultsEl.innerHTML = "<p class='meta'>Searching…</p>";
@@ -221,43 +256,15 @@ if (parentToggle) {
   });
 }
 
-// Book bag modal
-bagBtn?.addEventListener("click", () => {
-  bagItemsEl.innerHTML = "";
-  const items = getList();
-  if (!items.length) {
-    bagItemsEl.innerHTML = "<p class='meta'>Your book bag is empty.</p>";
-  } else {
-    items.forEach(b => {
-      const btn = document.createElement("button");
-      btn.className = "secondary";
-      btn.textContent = "Remove";
-      btn.addEventListener("click", () => {
-        saveList(getList().filter(x => x.id !== b.id));
-        renderList();    // updates badge
-        bagBtn.click();  // rebuild modal content
-      });
-      bagItemsEl.appendChild(bookCard(b, btn));
-    });
-  }
-  bagModal.hidden = false;
-  bagBtn?.setAttribute("aria-expanded","true"); // a11y
-});
-closeBagBtn?.addEventListener("click", () => {
-  bagModal.hidden = true;
-  bagBtn?.setAttribute("aria-expanded","false"); // a11y
-});
-bagModal?.addEventListener("click", (e) => {
-  if (e.target === bagModal) {
-    bagModal.hidden = true; // click backdrop
-    bagBtn?.setAttribute("aria-expanded","false");
-  }
-});
+// Book bag modal open/close
+bagBtn?.addEventListener("click", openModal);
+closeBagBtn?.addEventListener("click", closeModal);
+bagModal?.addEventListener("click", (e) => { if (e.target === bagModal) closeModal(); });
 
 // initial paint
 renderList();
 
-// --- Restore last search on page load ---
+// Restore last search on page load
 const last = getLastQuery();
 if (last) {
   queryInput.value = last;
